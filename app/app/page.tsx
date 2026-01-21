@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { VoiceButton } from "@/components/voice-button"
 import { ItemsList } from "@/components/items-list"
 import { SearchBar } from "@/components/search-bar"
@@ -14,13 +14,24 @@ import { Button } from "@/components/ui/button"
 export default function AppPage() {
   const [inputMode, setInputMode] = useState<"voice" | "type">("voice")
   const [searchQuery, setSearchQuery] = useState("")
+  const [debouncedQuery, setDebouncedQuery] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
   const pageSize = 5
+
+  // Debounce search query (500ms delay)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery)
+      setCurrentPage(1) // Reset to first page on search
+    }, 500)
+
+    return () => clearTimeout(timer)
+  }, [searchQuery])
 
   const { items, pagination, isLoading, addItem, removeItem, isCreating } = useItems({
     page: currentPage,
     pageSize,
-    search: searchQuery || undefined,
+    query: debouncedQuery || undefined,
   })
 
   const handleAddItem = async (item: { name: string; location: string }) => {
@@ -34,7 +45,7 @@ export default function AppPage() {
 
   const handleSearch = (query: string) => {
     setSearchQuery(query)
-    setCurrentPage(1) // Reset to first page on search
+    // Debouncing happens in useEffect
   }
 
   return (
@@ -113,18 +124,46 @@ export default function AppPage() {
 
         {/* Search and Items */}
         <section className="mx-auto max-w-2xl">
-          <SearchBar value={searchQuery} onChange={handleSearch} />
+          <div className="relative">
+            <SearchBar value={searchQuery} onChange={handleSearch} />
+            {searchQuery && searchQuery !== debouncedQuery && (
+              <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              </div>
+            )}
+          </div>
 
           <div className="mt-6">
             <div className="mb-4 flex items-center justify-between">
               <h3 className="text-lg font-medium text-foreground">
-                Your Items
-                {isLoading ? (
-                  <Loader2 className="ml-2 inline h-4 w-4 animate-spin" />
+                {debouncedQuery ? (
+                  <>
+                    Search Results
+                    <span className="ml-2 text-sm font-normal text-muted-foreground">
+                      ({pagination.total_items} {pagination.total_items === 1 ? 'item' : 'items'} found)
+                    </span>
+                  </>
                 ) : (
-                  <span className="ml-2 text-sm font-normal text-muted-foreground">({pagination.totalItems})</span>
+                  <>
+                    Your Items
+                    {isLoading ? (
+                      <Loader2 className="ml-2 inline h-4 w-4 animate-spin" />
+                    ) : (
+                      <span className="ml-2 text-sm font-normal text-muted-foreground">({pagination.total_items})</span>
+                    )}
+                  </>
                 )}
               </h3>
+              {debouncedQuery && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSearchQuery("")}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  Clear search
+                </Button>
+              )}
             </div>
 
             <ItemsList
@@ -133,6 +172,7 @@ export default function AppPage() {
               pagination={pagination}
               onPageChange={setCurrentPage}
               isLoading={isLoading}
+              searchQuery={debouncedQuery}
             />
           </div>
         </section>

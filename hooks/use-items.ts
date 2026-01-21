@@ -13,24 +13,24 @@ const fetcher = async (key: string): Promise<PaginatedResponse<Item>> => {
   const params = new URLSearchParams(key.split("?")[1] || "")
   const page = Number.parseInt(params.get("page") || "1")
   const pageSize = Number.parseInt(params.get("pageSize") || "10")
-  const search = params.get("search") || undefined
+  const query = params.get("query") || undefined
 
-  const response = await apiClient.getItems(page, pageSize, search)
+  const response = await apiClient.getItems(page, pageSize, query)
 
   if (!response.success || !response.data) {
     // Fallback to local storage if API fails
-    return getLocalItems(page, pageSize, search)
+    return getLocalItems(page, pageSize, query)
   }
 
   return response.data
 }
 
 // Helper to get items from local storage as fallback
-function getLocalItems(page: number, pageSize: number, search?: string): PaginatedResponse<Item> {
+function getLocalItems(page: number, pageSize: number, query?: string): PaginatedResponse<Item> {
   if (typeof window === "undefined") {
     return {
       data: [],
-      pagination: { page, pageSize, totalItems: 0, totalPages: 0, hasNextPage: false, hasPreviousPage: false },
+      pagination: { page, page_size: pageSize, total_items: 0, total_pages: 0, has_next_page: false, has_previous_page: false },
     }
   }
 
@@ -39,20 +39,17 @@ function getLocalItems(page: number, pageSize: number, search?: string): Paginat
 
   if (stored) {
     try {
-      items = JSON.parse(stored).map((item: Item) => ({
-        ...item,
-        createdAt: new Date(item.createdAt),
-      }))
+      items = JSON.parse(stored)
     } catch (e) {
       console.error("Failed to parse stored items:", e)
     }
   }
 
   // Filter by search
-  if (search) {
-    const lowerSearch = search.toLowerCase()
+  if (query) {
+    const lowerQuery = query.toLowerCase()
     items = items.filter(
-      (item) => item.name.toLowerCase().includes(lowerSearch) || item.location.toLowerCase().includes(lowerSearch),
+      (item) => item.name.toLowerCase().includes(lowerQuery) || item.location.toLowerCase().includes(lowerQuery),
     )
   }
 
@@ -66,11 +63,11 @@ function getLocalItems(page: number, pageSize: number, search?: string): Paginat
     data: paginatedItems,
     pagination: {
       page,
-      pageSize,
-      totalItems,
-      totalPages,
-      hasNextPage: page < totalPages,
-      hasPreviousPage: page > 1,
+      page_size: pageSize,
+      total_items: totalItems,
+      total_pages: totalPages,
+      has_next_page: page < totalPages,
+      has_previous_page: page > 1,
     },
   }
 }
@@ -110,8 +107,8 @@ function removeFromLocalStorage(id: string) {
   }
 }
 
-export function useItems(options: { page?: number; pageSize?: number; search?: string } = {}) {
-  const { page = 1, pageSize = 10, search } = options
+export function useItems(options: { page?: number; pageSize?: number; query?: string } = {}) {
+  const { page = 1, pageSize = 10, query } = options
   const [isCreating, setIsCreating] = useState(false)
   const [isDeleting, setIsDeleting] = useState<string | null>(null)
 
@@ -120,12 +117,12 @@ export function useItems(options: { page?: number; pageSize?: number; search?: s
     page: page.toString(),
     pageSize: pageSize.toString(),
   })
-  if (search) params.append("search", search)
+  if (query) params.append("query", query)
   const swrKey = `/api/items?${params}`
 
   const { data, error, isLoading, mutate } = useSWR<PaginatedResponse<Item>>(swrKey, fetcher, {
     // Use local storage data as fallback while loading
-    fallbackData: typeof window !== "undefined" ? getLocalItems(page, pageSize, search) : undefined,
+    fallbackData: typeof window !== "undefined" ? getLocalItems(page, pageSize, query) : undefined,
     revalidateOnFocus: true,
     revalidateOnReconnect: true,
   })
@@ -138,7 +135,8 @@ export function useItems(options: { page?: number; pageSize?: number; search?: s
         const tempItem: Item = {
           id: crypto.randomUUID(),
           ...input,
-          createdAt: new Date(),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         }
 
         // Save to local storage immediately
@@ -152,7 +150,7 @@ export function useItems(options: { page?: number; pageSize?: number; search?: s
             data: [tempItem, ...current.data],
             pagination: {
               ...current.pagination,
-              totalItems: current.pagination.totalItems + 1,
+              total_items: current.pagination.total_items + 1,
             },
           }
         }, false)
@@ -192,7 +190,7 @@ export function useItems(options: { page?: number; pageSize?: number; search?: s
             data: current.data.filter((item) => item.id !== id),
             pagination: {
               ...current.pagination,
-              totalItems: current.pagination.totalItems - 1,
+              total_items: current.pagination.total_items - 1,
             },
           }
         }, false)
@@ -222,11 +220,11 @@ export function useItems(options: { page?: number; pageSize?: number; search?: s
     items: data?.data || [],
     pagination: data?.pagination || {
       page: 1,
-      pageSize: 10,
-      totalItems: 0,
-      totalPages: 0,
-      hasNextPage: false,
-      hasPreviousPage: false,
+      page_size: 10,
+      total_items: 0,
+      total_pages: 0,
+      has_next_page: false,
+      has_previous_page: false,
     },
     isLoading,
     isCreating,

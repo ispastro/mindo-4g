@@ -1,6 +1,6 @@
 "use client"
 
-import { MapPin, Trash2, Clock, Volume2, ChevronLeft, ChevronRight, Loader2 } from "lucide-react"
+import { MapPin, Trash2, Clock, Volume2, ChevronLeft, ChevronRight, Loader2, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import type { Item, PaginatedResponse } from "@/lib/types"
@@ -12,10 +12,11 @@ interface ItemsListProps {
   pagination: PaginatedResponse<Item>["pagination"]
   onPageChange: (page: number) => void
   isLoading?: boolean
+  searchQuery?: string
 }
 
-export function ItemsList({ items, onRemove, pagination, onPageChange, isLoading }: ItemsListProps) {
-  const { page, totalPages, totalItems, hasNextPage, hasPreviousPage } = pagination
+export function ItemsList({ items, onRemove, pagination, onPageChange, isLoading, searchQuery }: ItemsListProps) {
+  const { page, total_pages, total_items, has_next_page, has_previous_page } = pagination
 
   const speakItem = (item: Item) => {
     if ("speechSynthesis" in window) {
@@ -37,11 +38,23 @@ export function ItemsList({ items, onRemove, pagination, onPageChange, isLoading
   if (items.length === 0) {
     return (
       <Card className="flex flex-col items-center justify-center border-dashed bg-card/50 p-12 text-center">
-        <MapPin className="mb-4 h-12 w-12 text-muted-foreground/50" />
-        <h4 className="mb-2 text-lg font-medium text-foreground">No items saved yet</h4>
-        <p className="text-sm text-muted-foreground">
-          Use the microphone or type manually to save where you put things
-        </p>
+        {searchQuery ? (
+          <>
+            <Search className="mb-4 h-12 w-12 text-muted-foreground/50" />
+            <h4 className="mb-2 text-lg font-medium text-foreground">No items found</h4>
+            <p className="text-sm text-muted-foreground">
+              No items match &quot;{searchQuery}&quot;. Try a different search term.
+            </p>
+          </>
+        ) : (
+          <>
+            <MapPin className="mb-4 h-12 w-12 text-muted-foreground/50" />
+            <h4 className="mb-2 text-lg font-medium text-foreground">No items saved yet</h4>
+            <p className="text-sm text-muted-foreground">
+              Use the microphone or type manually to save where you put things
+            </p>
+          </>
+        )}
       </Card>
     )
   }
@@ -59,7 +72,7 @@ export function ItemsList({ items, onRemove, pagination, onPageChange, isLoading
             <p className="truncate text-sm text-muted-foreground">{item.location}</p>
             <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground/70">
               <Clock className="h-3 w-3" />
-              <span>{formatDistanceToNow(new Date(item.createdAt), { addSuffix: true })}</span>
+              <span>{formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}</span>
             </div>
           </div>
 
@@ -87,17 +100,17 @@ export function ItemsList({ items, onRemove, pagination, onPageChange, isLoading
       ))}
 
       {/* Pagination */}
-      {totalPages > 1 && (
+      {total_pages > 1 && (
         <div className="flex items-center justify-between border-t border-border pt-4">
           <p className="text-sm text-muted-foreground">
-            Page {page} of {totalPages} ({totalItems} items)
+            Page {page} of {total_pages} ({total_items} items)
           </p>
           <div className="flex items-center gap-2">
             <Button
               size="sm"
               variant="outline"
               onClick={() => onPageChange(page - 1)}
-              disabled={!hasPreviousPage || isLoading}
+              disabled={!has_previous_page || isLoading}
               aria-label="Previous page"
             >
               <ChevronLeft className="h-4 w-4" />
@@ -106,7 +119,7 @@ export function ItemsList({ items, onRemove, pagination, onPageChange, isLoading
               size="sm"
               variant="outline"
               onClick={() => onPageChange(page + 1)}
-              disabled={!hasNextPage || isLoading}
+              disabled={!has_next_page || isLoading}
               aria-label="Next page"
             >
               <ChevronRight className="h-4 w-4" />

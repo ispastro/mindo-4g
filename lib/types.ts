@@ -4,9 +4,9 @@ export interface Item {
   id: string
   name: string
   location: string
-  userId?: string
-  createdAt: Date
-  updatedAt?: Date
+  user_id?: string
+  created_at: string
+  updated_at: string
 }
 
 export interface CreateItemInput {
@@ -23,11 +23,15 @@ export interface PaginatedResponse<T> {
   data: T[]
   pagination: {
     page: number
-    pageSize: number
-    totalItems: number
-    totalPages: number
-    hasNextPage: boolean
-    hasPreviousPage: boolean
+    page_size: number
+    total_items: number
+    total_pages: number
+    has_next_page: boolean
+    has_previous_page: boolean
+  }
+  ai_metadata?: {
+    original_query: string
+    extracted_terms: string
   }
 }
 
@@ -41,10 +45,21 @@ export interface User {
   id: string
   email: string
   name?: string
-  createdAt: Date
+  created_at: string
 }
 
 export interface AuthSession {
   user: User | null
   isAuthenticated: boolean
+}
+
+export interface LoginRequest {
+  email: string
+  password: string
+}
+
+export interface SignupRequest {
+  email: string
+  password: string
+  name?: string
 }

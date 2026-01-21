@@ -2,7 +2,7 @@
 
 import useSWR from "swr"
 import { apiClient } from "@/lib/api-client"
-import type { AuthSession } from "@/lib/types"
+import type { AuthSession, User } from "@/lib/types"
 
 const fetcher = async (): Promise<AuthSession> => {
   const response = await apiClient.getCurrentUser()
@@ -12,8 +12,8 @@ const fetcher = async (): Promise<AuthSession> => {
   }
 
   return {
-    user: response.data.user,
-    isAuthenticated: !!response.data.user,
+    user: response.data,
+    isAuthenticated: true,
   }
 }
 
@@ -22,6 +22,7 @@ export function useAuth() {
     revalidateOnFocus: true,
     revalidateOnReconnect: true,
     fallbackData: { user: null, isAuthenticated: false },
+    shouldRetryOnError: false,
   })
 
   return {
