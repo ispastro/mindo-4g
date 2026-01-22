@@ -17,6 +17,10 @@ export const metadata: Metadata = {
   description: "Tell Mindo where you put your things by simply speaking to it. No typing needed.",
   generator: "v0.app",
   manifest: "/manifest.json",
+  icons: {
+    icon: "/icon-192.svg",
+    apple: "/apple-touch-icon.svg",
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
@@ -25,7 +29,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: "#0ea5e9",
+  themeColor: "#000000",
 }
 
 export default function RootLayout({
