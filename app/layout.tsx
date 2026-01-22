@@ -1,10 +1,15 @@
 import type React from "react"
 import type { Metadata, Viewport } from "next"
-import { Inter } from "next/font/google"
+import { Lexend_Deca } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 
-const _inter = Inter({ subsets: ["latin"] })
+const lexend = Lexend_Deca({ 
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  variable: "--font-lexend",
+  display: "swap",
+})
 
 export const metadata: Metadata = {
   title: "Mindo - Never lose your things again",
@@ -23,7 +28,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`font-sans antialiased`}>
+      <body className={`${lexend.variable} font-sans antialiased`}>
         {children}
         <Analytics />
       </body>
