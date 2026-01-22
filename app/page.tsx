@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { AnimatedButton } from "@/components/animated-button"
 import { Mic, Database, Search } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 
@@ -28,12 +29,12 @@ export default function Home() {
           <div className="flex items-center gap-3">
             <ThemeToggle />
             <Link href="/login">
-              <Button variant="ghost" size="sm">
+              <AnimatedButton variant="ghost" size="sm">
                 Log In
-              </Button>
+              </AnimatedButton>
             </Link>
             <Link href="/signup">
-              <Button size="sm">Sign Up</Button>
+              <AnimatedButton size="sm">Sign Up</AnimatedButton>
             </Link>
           </div>
         </div>
@@ -47,9 +48,9 @@ export default function Home() {
               <h1 className="text-4xl md:text-5xl font-bold text-primary mb-4">Mindo</h1>
               <p className="text-2xl md:text-3xl text-foreground mb-8">Never lose your things again</p>
               <Link href="/app">
-                <Button size="lg" className="px-8">
+                <AnimatedButton size="lg" className="px-8">
                   Start Using Mindo
-                </Button>
+                </AnimatedButton>
               </Link>
             </div>
             <div className="flex-1 relative">
@@ -146,7 +147,7 @@ export default function Home() {
           {/* Bottom Bar */}
           <div className="pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-sm text-muted-foreground">
-              © 2025 Mindo. All rights reserved.
+              © {new Date().getFullYear()} Mindo. All rights reserved.
             </p>
             <div className="flex items-center gap-6">
               <Link href="#" className="text-muted-foreground hover:text-foreground transition-colors" aria-label="GitHub">
