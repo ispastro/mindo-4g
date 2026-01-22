@@ -1,7 +1,7 @@
 // API client for making requests to backend
 import type { Item, CreateItemInput, UpdateItemInput, PaginatedResponse, ApiResponse, User, LoginRequest, SignupRequest } from "./types"
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://mindo-backend-1.onrender.com/api" 
 
 class ApiClient {
   private getToken(): string | null {

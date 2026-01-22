@@ -1,0 +1,39 @@
+{
+  "name": "Mindo - Voice Memory Assistant",
+  "short_name": "Mindo",
+  "description": "Never lose your things again. Voice-first memory assistant for everyday life.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#1a1a1a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-dark-32x32.png",
+      "sizes": "32x32",
+      "type": "image/png"
+    },
+    {
+      "src": "/apple-icon.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "utilities"],
+  "shortcuts": [
+    {
+      "name": "Add Item",
+      "short_name": "Add",
+      "description": "Quickly add a new item",
+      "url": "/app",
+      "icons": [{ "src": "/icon-dark-32x32.png", "sizes": "32x32" }]
+    }
+  ]
+}
