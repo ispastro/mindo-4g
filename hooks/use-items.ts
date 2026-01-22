@@ -14,8 +14,16 @@ const fetcher = async (key: string): Promise<PaginatedResponse<Item>> => {
   const page = Number.parseInt(params.get("page") || "1")
   const pageSize = Number.parseInt(params.get("pageSize") || "10")
   const query = params.get("query") || undefined
+  const useAI = params.get("useAI") === "true"
 
-  const response = await apiClient.getItems(page, pageSize, query)
+  let response
+  if (query && useAI) {
+    // Use AI search for natural language queries
+    response = await apiClient.searchItemsAI(query, page, pageSize)
+  } else {
+    // Use regular search for simple keyword matching
+    response = await apiClient.getItems(page, pageSize, query)
+  }
 
   if (!response.success || !response.data) {
     // Fallback to local storage if API fails
@@ -112,12 +120,16 @@ export function useItems(options: { page?: number; pageSize?: number; query?: st
   const [isCreating, setIsCreating] = useState(false)
   const [isDeleting, setIsDeleting] = useState<string | null>(null)
 
+  // Detect if query is natural language (AI search) or simple keyword
+  const isNaturalLanguage = query && (query.includes(" ") && query.split(" ").length > 2)
+
   // Build the SWR key
   const params = new URLSearchParams({
     page: page.toString(),
     pageSize: pageSize.toString(),
   })
   if (query) params.append("query", query)
+  if (isNaturalLanguage) params.append("useAI", "true")
   const swrKey = `/api/items?${params}`
 
   const { data, error, isLoading, mutate } = useSWR<PaginatedResponse<Item>>(swrKey, fetcher, {
