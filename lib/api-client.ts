@@ -1,7 +1,7 @@
 // API client for making requests to backend
 import type { Item, CreateItemInput, UpdateItemInput, PaginatedResponse, ApiResponse, User, LoginRequest, SignupRequest } from "./types"
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"
+const API_BASE = process.env.NEXT_PUBLIC_API_URL 
 
 class ApiClient {
   private getToken(): string | null {
@@ -12,9 +12,8 @@ class ApiClient {
   private async request<T>(endpoint: string, options?: RequestInit): Promise<ApiResponse<T>> {
     try {
       const token = this.getToken()
-      const headers: HeadersInit = {
+      const headers: Record<string, string> = {
         "Content-Type": "application/json",
-        ...options?.headers,
       }
       
       if (token) {
@@ -22,8 +21,11 @@ class ApiClient {
       }
 
       const response = await fetch(`${API_BASE}${endpoint}`, {
-        headers,
         ...options,
+        headers: {
+          ...headers,
+          ...options?.headers,
+        },
       })
 
       if (response.status === 401) {
@@ -137,6 +139,3 @@ class ApiClient {
 
 // Singleton instance
 export const apiClient = new ApiClient()
-
-// Type for the User
-import type { User } from "./types"
