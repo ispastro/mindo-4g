@@ -228,6 +228,41 @@ export function useItems(options: { page?: number; pageSize?: number; query?: st
     [mutate],
   )
 
+  const updateItem = useCallback(
+    async (id: string, input: { name: string; location: string }) => {
+      try {
+        // Optimistically update UI
+        mutate((current) => {
+          if (!current) return current
+          return {
+            ...current,
+            data: current.data.map((item) =>
+              item.id === id ? { ...item, ...input, updated_at: new Date().toISOString() } : item
+            ),
+          }
+        }, false)
+
+        // Call API
+        const response = await apiClient.updateItem(id, input)
+
+        if (!response.success) {
+          mutate() // Revert on error
+          throw new Error(response.error)
+        }
+
+        // Revalidate
+        mutate()
+
+        return { success: true }
+      } catch (error) {
+        console.error("Failed to update item:", error)
+        mutate() // Revert on error
+        return { success: false, error: "Failed to update item" }
+      }
+    },
+    [mutate],
+  )
+
   return {
     items: data?.data || [],
     pagination: data?.pagination || {
@@ -244,6 +279,7 @@ export function useItems(options: { page?: number; pageSize?: number; query?: st
     error,
     addItem,
     removeItem,
+    updateItem,
     refresh: () => mutate(),
   }
 }

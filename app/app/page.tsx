@@ -28,7 +28,7 @@ export default function AppPage() {
     return () => clearTimeout(timer)
   }, [searchQuery])
 
-  const { items, pagination, isLoading, addItem, removeItem, isCreating } = useItems({
+  const { items, pagination, isLoading, addItem, removeItem, updateItem, isCreating } = useItems({
     page: currentPage,
     pageSize,
     query: debouncedQuery || undefined,
@@ -169,6 +169,7 @@ export default function AppPage() {
             <ItemsList
               items={items}
               onRemove={handleRemoveItem}
+              onUpdate={updateItem}
               pagination={pagination}
               onPageChange={setCurrentPage}
               isLoading={isLoading}

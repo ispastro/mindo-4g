@@ -1,28 +1,52 @@
 "use client"
 
-import { MapPin, Trash2, Clock, Volume2, ChevronLeft, ChevronRight, Loader2, Search } from "lucide-react"
+import { useState } from "react"
+import { MapPin, Trash2, Clock, Volume2, ChevronLeft, ChevronRight, Loader2, Search, Pencil, MoreVertical } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { EditItemDialog } from "@/components/edit-item-dialog"
+import { DeleteItemDialog } from "@/components/delete-item-dialog"
 import type { Item, PaginatedResponse } from "@/lib/types"
 import { formatDistanceToNow } from "date-fns"
 
 interface ItemsListProps {
   items: Item[]
   onRemove: (id: string) => void
+  onUpdate: (id: string, data: { name: string; location: string }) => Promise<void>
   pagination: PaginatedResponse<Item>["pagination"]
   onPageChange: (page: number) => void
   isLoading?: boolean
   searchQuery?: string
 }
 
-export function ItemsList({ items, onRemove, pagination, onPageChange, isLoading, searchQuery }: ItemsListProps) {
+export function ItemsList({ items, onRemove, onUpdate, pagination, onPageChange, isLoading, searchQuery }: ItemsListProps) {
   const { page, total_pages, total_items, has_next_page, has_previous_page } = pagination
+  const [editItem, setEditItem] = useState<Item | null>(null)
+  const [deleteItem, setDeleteItem] = useState<Item | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const speakItem = (item: Item) => {
     if ("speechSynthesis" in window) {
       const utterance = new SpeechSynthesisUtterance(`Your ${item.name} is ${item.location}`)
       utterance.rate = 1.0
       window.speechSynthesis.speak(utterance)
+    }
+  }
+
+  const handleDelete = async () => {
+    if (!deleteItem) return
+    setIsDeleting(true)
+    try {
+      await onRemove(deleteItem.id)
+      setDeleteItem(null)
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -80,25 +104,62 @@ export function ItemsList({ items, onRemove, pagination, onPageChange, isLoading
             </div>
           </div>
 
-          <div className="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={() => speakItem(item)}
-              className="h-9 w-9 text-muted-foreground hover:text-primary"
-              aria-label={`Read ${item.name} location aloud`}
-            >
-              <Volume2 className="h-4 w-4" />
-            </Button>
-            <Button
-              size="icon"
-              variant="ghost"
-              onClick={() => onRemove(item.id)}
-              className="h-9 w-9 text-muted-foreground hover:text-destructive"
-              aria-label={`Remove ${item.name}`}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+          <div className="flex items-center gap-1">
+            {/* Desktop: Show buttons on hover */}
+            <div className="hidden md:flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => speakItem(item)}
+                className="h-9 w-9 text-muted-foreground hover:text-primary"
+                aria-label={`Read ${item.name} location aloud`}
+              >
+                <Volume2 className="h-4 w-4" />
+              </Button>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => setEditItem(item)}
+                className="h-9 w-9 text-muted-foreground hover:text-primary"
+                aria-label={`Edit ${item.name}`}
+              >
+                <Pencil className="h-4 w-4" />
+              </Button>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={() => setDeleteItem(item)}
+                className="h-9 w-9 text-muted-foreground hover:text-destructive"
+                aria-label={`Remove ${item.name}`}
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+
+            {/* Mobile: Dropdown menu */}
+            <div className="md:hidden">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button size="icon" variant="ghost" className="h-9 w-9">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => speakItem(item)}>
+                    <Volume2 className="mr-2 h-4 w-4" />
+                    Read Aloud
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setEditItem(item)}>
+                    <Pencil className="mr-2 h-4 w-4" />
+                    Edit
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setDeleteItem(item)} className="text-destructive">
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
         </Card>
       ))}
@@ -131,6 +192,23 @@ export function ItemsList({ items, onRemove, pagination, onPageChange, isLoading
           </div>
         </div>
       )}
+
+      {/* Edit Dialog */}
+      <EditItemDialog
+        item={editItem}
+        open={!!editItem}
+        onOpenChange={(open) => !open && setEditItem(null)}
+        onSave={onUpdate}
+      />
+
+      {/* Delete Confirmation */}
+      <DeleteItemDialog
+        item={deleteItem}
+        open={!!deleteItem}
+        onOpenChange={(open) => !open && setDeleteItem(null)}
+        onConfirm={handleDelete}
+        isDeleting={isDeleting}
+      />
     </div>
   )
 }
