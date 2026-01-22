@@ -72,7 +72,11 @@ export function ItemsList({ items, onRemove, pagination, onPageChange, isLoading
             <p className="truncate text-sm text-muted-foreground">{item.location}</p>
             <div className="mt-1 flex items-center gap-1 text-xs text-muted-foreground/70">
               <Clock className="h-3 w-3" />
-              <span>{formatDistanceToNow(new Date(item.created_at), { addSuffix: true })}</span>
+              <span>
+                {item.created_at && !isNaN(new Date(item.created_at).getTime())
+                  ? formatDistanceToNow(new Date(item.created_at), { addSuffix: true })
+                  : 'Recently added'}
+              </span>
             </div>
           </div>
 
