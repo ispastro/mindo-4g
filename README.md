@@ -12,7 +12,7 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.1-38B2AC?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
 [![PWA](https://img.shields.io/badge/PWA-Enabled-5A0FC8?style=for-the-badge&logo=pwa)](https://web.dev/progressive-web-apps/)
 
-[Live Demo](https://mindo.vercel.app) • [Report Bug](https://github.com/ispastro/mindo-4g/issues) • [Request Feature](https://github.com/ispastro/mindo-4g/issues)
+[Live Demo](https://mindo-mine.vercel.app) • [Report Bug](https://github.com/ispastro/mindo-4g/issues) • [Request Feature](https://github.com/ispastro/mindo-4g/issues)
 
 </div>
 
