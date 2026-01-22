@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button"
 import { AnimatedButton } from "@/components/animated-button"
 import { Mic, Database, Search } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { MindoLogo } from "@/components/mindo-logo"
 
 export default function Home() {
   return (
@@ -13,17 +14,7 @@ export default function Home() {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <div className="h-8 w-8 rounded bg-primary flex items-center justify-center">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                className="h-5 w-5 text-primary-foreground"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                <path d="M2 17l10 5 10-5" />
-                <path d="M2 12l10 5 10-5" />
-              </svg>
+              <MindoLogo size={20} className="text-primary-foreground" />
             </div>
             <span className="text-xl font-semibold text-primary">Mindo</span>
           </div>
@@ -122,17 +113,7 @@ export default function Home() {
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <div className="h-8 w-8 rounded bg-primary flex items-center justify-center">
-                  <svg
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    className="h-5 w-5 text-primary-foreground"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                  >
-                    <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                    <path d="M2 17l10 5 10-5" />
-                    <path d="M2 12l10 5 10-5" />
-                  </svg>
+                  <MindoLogo size={20} className="text-primary-foreground" />
                 </div>
                 <span className="text-lg font-semibold text-foreground">Mindo</span>
               </div>

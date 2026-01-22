@@ -7,6 +7,7 @@ import { SearchBar } from "@/components/search-bar"
 import { TypeForm } from "@/components/type-form"
 import { useItems } from "@/hooks/use-items"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { MindoLogo } from "@/components/mindo-logo"
 import { Mic, Keyboard, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -56,17 +57,7 @@ export default function AppPage() {
           <div className="flex items-center justify-between">
             <Link href="/" className="flex items-center gap-2">
               <div className="h-8 w-8 rounded bg-primary flex items-center justify-center">
-                <svg
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  className="h-5 w-5 text-primary-foreground"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                >
-                  <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                  <path d="M2 17l10 5 10-5" />
-                  <path d="M2 12l10 5 10-5" />
-                </svg>
+                <MindoLogo size={20} className="text-primary-foreground" />
               </div>
               <span className="text-xl font-semibold text-primary">Mindo</span>
             </Link>
