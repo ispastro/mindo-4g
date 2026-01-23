@@ -68,8 +68,10 @@ export function LoginForm() {
         />
       </div>
 
-      <Button type="submit" className="w-full h-11 mt-2" disabled={loading}>
-        {loading ? "Signing in..." : "Sign In"}
+      <Button type="submit" className="w-full h-11 mt-2 group" disabled={loading}>
+        <span className="inline-block group-hover:animate-slide-up">
+          {loading ? "Signing in..." : "Sign In"}
+        </span>
       </Button>
     </form>
   )

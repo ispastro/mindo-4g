@@ -92,8 +92,10 @@ export function SignupForm() {
         <p className="text-xs text-muted-foreground">Must be at least 8 characters</p>
       </div>
 
-      <Button type="submit" className="w-full h-11 mt-2" disabled={loading}>
-        {loading ? "Creating account..." : "Create Account"}
+      <Button type="submit" className="w-full h-11 mt-2 group" disabled={loading}>
+        <span className="inline-block group-hover:animate-slide-up">
+          {loading ? "Creating account..." : "Create Account"}
+        </span>
       </Button>
     </form>
   )

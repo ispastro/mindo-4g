@@ -81,19 +81,19 @@ export default function AppPage() {
               variant={inputMode === "voice" ? "default" : "outline"}
               size="sm"
               onClick={() => setInputMode("voice")}
-              className="gap-2"
+              className="gap-2 group"
             >
               <Mic className="h-4 w-4" />
-              Voice
+              <span className="inline-block group-hover:animate-slide-up">Voice</span>
             </Button>
             <Button
               variant={inputMode === "type" ? "default" : "outline"}
               size="sm"
               onClick={() => setInputMode("type")}
-              className="gap-2"
+              className="gap-2 group"
             >
               <Keyboard className="h-4 w-4" />
-              Type Instead
+              <span className="inline-block group-hover:animate-slide-up">Type Instead</span>
             </Button>
           </div>
 
@@ -137,11 +137,7 @@ export default function AppPage() {
                 ) : (
                   <>
                     Your Items
-                    {isLoading ? (
-                      <Loader2 className="ml-2 inline h-4 w-4 animate-spin" />
-                    ) : (
-                      <span className="ml-2 text-sm font-normal text-muted-foreground">({pagination.total_items})</span>
-                    )}
+                    <span className="ml-2 text-sm font-normal text-muted-foreground">({pagination.total_items})</span>
                   </>
                 )}
               </h3>

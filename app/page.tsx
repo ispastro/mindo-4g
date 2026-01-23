@@ -39,7 +39,7 @@ export default function Home() {
             <div className="flex-1 text-center md:text-left">
               <h1 className="text-4xl md:text-5xl font-bold text-primary mb-4">Mindo</h1>
               <p className="text-2xl md:text-3xl text-foreground mb-8">Never lose your things again</p>
-              <Link href="/app">
+              <Link href="/login">
                 <AnimatedButton size="lg" className="px-8">
                   Start Using Mindo
                 </AnimatedButton>

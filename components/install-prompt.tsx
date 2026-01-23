@@ -50,8 +50,8 @@ export function InstallPrompt() {
           <p className="text-sm text-muted-foreground mb-3">
             Add to home screen for quick access and offline use
           </p>
-          <Button onClick={handleInstall} size="sm" className="w-full">
-            Install App
+          <Button onClick={handleInstall} size="sm" className="w-full group">
+            <span className="inline-block group-hover:animate-slide-up">Install App</span>
           </Button>
         </div>
       </div>

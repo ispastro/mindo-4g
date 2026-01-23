@@ -131,13 +131,17 @@
 /* Button text slide-up animation */
 @keyframes slide-up {
   from {
-    transform: translateY(100%);
+    transform: translateY(10px);
     opacity: 0;
   }
   to {
     transform: translateY(0);
     opacity: 1;
   }
+}
+
+.group:hover .group-hover\:animate-slide-up {
+  animation: slide-up 0.3s ease;
 }
 
 @keyframes slide-down {

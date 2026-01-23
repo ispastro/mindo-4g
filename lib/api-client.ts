@@ -31,6 +31,7 @@ class ApiClient {
       if (response.status === 401) {
         if (typeof window !== "undefined") {
           localStorage.removeItem("access_token")
+          document.cookie = "access_token=; path=/; max-age=0"
           window.location.href = "/login"
         }
         return {
@@ -121,6 +122,8 @@ class ApiClient {
     
     if (response.success && response.data && typeof window !== "undefined") {
       localStorage.setItem("access_token", response.data.access_token)
+      // Also set cookie for middleware
+      document.cookie = `access_token=${response.data.access_token}; path=/; max-age=86400; SameSite=Strict`
     }
     
     return response
@@ -133,6 +136,8 @@ class ApiClient {
   logout() {
     if (typeof window !== "undefined") {
       localStorage.removeItem("access_token")
+      // Also remove cookie
+      document.cookie = "access_token=; path=/; max-age=0"
     }
   }
 }

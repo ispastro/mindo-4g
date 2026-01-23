@@ -2,6 +2,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { SignupForm } from "@/components/signup-form"
+import { MindoLogo } from "@/components/mindo-logo"
 
 export default function SignupPage() {
   return (
@@ -11,25 +12,15 @@ export default function SignupPage() {
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2">
             <div className="h-8 w-8 rounded bg-primary flex items-center justify-center">
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                className="h-5 w-5 text-primary-foreground"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path d="M12 2L2 7l10 5 10-5-10-5z" />
-                <path d="M2 17l10 5 10-5" />
-                <path d="M2 12l10 5 10-5" />
-              </svg>
+              <MindoLogo size={20} className="text-primary-foreground" />
             </div>
             <span className="text-xl font-semibold text-primary">Mindo</span>
           </Link>
           <div className="flex items-center gap-3">
             <ThemeToggle />
             <Link href="/login">
-              <Button variant="outline" size="sm">
-                Log In
+              <Button size="sm" className="group">
+                <span className="inline-block group-hover:animate-slide-up">Log In</span>
               </Button>
             </Link>
           </div>
