@@ -42,11 +42,23 @@ export default function AppPage() {
       const message = `Your ${firstItem.name} is in ${firstItem.location}`
       
       if ('speechSynthesis' in window) {
+        // Cancel any ongoing speech
         window.speechSynthesis.cancel()
-        const utterance = new SpeechSynthesisUtterance(message)
-        utterance.rate = 0.9
-        utterance.pitch = 1
-        window.speechSynthesis.speak(utterance)
+        
+        // Small delay to ensure speech synthesis is ready
+        setTimeout(() => {
+          const utterance = new SpeechSynthesisUtterance(message)
+          utterance.rate = 0.9
+          utterance.pitch = 1
+          utterance.volume = 1
+          
+          // Handle errors
+          utterance.onerror = (event) => {
+            console.log('Speech synthesis error:', event)
+          }
+          
+          window.speechSynthesis.speak(utterance)
+        }, 100)
       }
     }
   }, [debouncedQuery, items, isLoading])
@@ -146,14 +158,18 @@ export default function AppPage() {
                 {debouncedQuery ? (
                   <>
                     Search Results
-                    <span className="ml-2 text-sm font-normal text-muted-foreground">
-                      ({pagination.total_items} {pagination.total_items === 1 ? 'item' : 'items'} found)
-                    </span>
+                    {!isLoading && (
+                      <span className="ml-2 text-sm font-normal text-muted-foreground">
+                        ({pagination.total_items} {pagination.total_items === 1 ? 'item' : 'items'} found)
+                      </span>
+                    )}
                   </>
                 ) : (
                   <>
                     Your Items
-                    <span className="ml-2 text-sm font-normal text-muted-foreground">({pagination.total_items})</span>
+                    {!isLoading && (
+                      <span className="ml-2 text-sm font-normal text-muted-foreground">({pagination.total_items})</span>
+                    )}
                   </>
                 )}
               </h3>
