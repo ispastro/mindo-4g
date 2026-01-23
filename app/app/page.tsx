@@ -35,6 +35,22 @@ export default function AppPage() {
     query: debouncedQuery || undefined,
   })
 
+  // Auto-speak search results
+  useEffect(() => {
+    if (debouncedQuery && items.length > 0 && !isLoading) {
+      const firstItem = items[0]
+      const message = `Your ${firstItem.name} is in ${firstItem.location}`
+      
+      if ('speechSynthesis' in window) {
+        window.speechSynthesis.cancel()
+        const utterance = new SpeechSynthesisUtterance(message)
+        utterance.rate = 0.9
+        utterance.pitch = 1
+        window.speechSynthesis.speak(utterance)
+      }
+    }
+  }, [debouncedQuery, items, isLoading])
+
   const handleAddItem = async (item: { name: string; location: string }) => {
     await addItem(item)
     setCurrentPage(1) // Reset to first page after adding

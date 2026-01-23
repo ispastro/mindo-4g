@@ -1,11 +1,21 @@
+"use client"
+
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { AnimatedButton } from "@/components/animated-button"
 import { Mic, Database, Search } from "lucide-react"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { MindoLogo } from "@/components/mindo-logo"
+import { useEffect, useState } from "react"
 
 export default function Home() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+
+  useEffect(() => {
+    const token = localStorage.getItem('access_token')
+    setIsAuthenticated(!!token)
+  }, [])
+
   return (
     <div className="min-h-screen flex flex-col bg-background relative">
       <div className="bg-orbs" aria-hidden="true" />
@@ -39,7 +49,7 @@ export default function Home() {
             <div className="flex-1 text-center md:text-left">
               <h1 className="text-4xl md:text-5xl font-bold text-primary mb-4">Mindo</h1>
               <p className="text-2xl md:text-3xl text-foreground mb-8">Never lose your things again</p>
-              <Link href="/login">
+              <Link href={isAuthenticated ? "/app" : "/login"}>
                 <AnimatedButton size="lg" className="px-8">
                   Start Using Mindo
                 </AnimatedButton>
