@@ -39,7 +39,6 @@ export function SearchBar({ value, onChange }: SearchBarProps) {
         try {
           const text = await voiceService.transcribe(audioBlob)
           onChange(text)
-          speakResults(text)
         } catch (err) {
           console.error("Transcription error:", err)
         }
@@ -60,10 +59,6 @@ export function SearchBar({ value, onChange }: SearchBarProps) {
     if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
       mediaRecorderRef.current.stop()
     }
-  }
-
-  const speakResults = async (query: string) => {
-    await voiceService.speak(`Searching for ${query}`)
   }
 
   const toggleVoiceSearch = () => {

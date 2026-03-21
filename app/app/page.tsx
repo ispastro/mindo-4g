@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { VoiceButton } from "@/components/voice-button"
 import { ItemsList } from "@/components/items-list"
 import { SearchBar } from "@/components/search-bar"
@@ -19,6 +19,7 @@ export default function AppPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [debouncedQuery, setDebouncedQuery] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
+  const lastSpokenSearchKey = useRef<string | null>(null)
   const pageSize = 5
 
   // Debounce search query (500ms delay)
@@ -39,8 +40,19 @@ export default function AppPage() {
 
   // Auto-speak search results
   useEffect(() => {
+    if (!debouncedQuery) {
+      lastSpokenSearchKey.current = null
+      return
+    }
+
     if (debouncedQuery && items.length > 0 && !isLoading) {
       const firstItem = items[0]
+      const currentKey = `${debouncedQuery}|${firstItem.id}|${firstItem.name}|${firstItem.location}`
+
+      if (lastSpokenSearchKey.current === currentKey) {
+        return
+      }
+      lastSpokenSearchKey.current = currentKey
       
       // Smart preposition detection
       const location = firstItem.location.toLowerCase()
