@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,17 +16,17 @@ interface EditItemDialogProps {
 }
 
 export function EditItemDialog({ item, open, onOpenChange, onSave }: EditItemDialogProps) {
-  const [name, setName] = useState(item?.name || "")
-  const [location, setLocation] = useState(item?.location || "")
+  const [name, setName] = useState("")
+  const [location, setLocation] = useState("")
   const [isLoading, setIsLoading] = useState(false)
 
   // Update form when item changes
-  useState(() => {
+  useEffect(() => {
     if (item) {
       setName(item.name)
       setLocation(item.location)
     }
-  })
+  }, [item])
 
   const handleSave = async () => {
     if (!item || !name.trim() || !location.trim()) return
