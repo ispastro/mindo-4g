@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from "next"
 import { Lexend_Deca } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { InstallPrompt } from "@/components/install-prompt"
+import { GoogleOAuthProvider } from "@react-oauth/google"
 import "./globals.css"
 
 const lexend = Lexend_Deca({ 
@@ -40,9 +41,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${lexend.variable} font-sans antialiased`}>
-        {children}
-        <InstallPrompt />
-        <Analytics />
+        <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!}>
+          {children}
+          <InstallPrompt />
+          <Analytics />
+        </GoogleOAuthProvider>
       </body>
     </html>
   )

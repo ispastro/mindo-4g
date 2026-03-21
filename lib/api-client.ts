@@ -1,7 +1,7 @@
 // API client for making requests to backend
 import type { Item, CreateItemInput, UpdateItemInput, PaginatedResponse, ApiResponse, User, LoginRequest, SignupRequest } from "./types"
 
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://mindo-backend-1.onrender.com/api" 
+const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://mindo-edb480512968.herokuapp.com/api"
 
 class ApiClient {
   private getToken(): string | null {
@@ -38,6 +38,10 @@ class ApiClient {
           success: false,
           error: "Unauthorized",
         }
+      }
+
+      if (response.status === 204) {
+        return { success: true }
       }
 
       const data = await response.json()
@@ -126,6 +130,20 @@ class ApiClient {
       document.cookie = `access_token=${response.data.access_token}; path=/; max-age=86400; SameSite=Strict`
     }
     
+    return response
+  }
+
+  async googleLogin(token: string): Promise<ApiResponse<{ access_token: string; token_type: string; user: User }>> {
+    const response = await this.request<{ access_token: string; token_type: string; user: User }>("/auth/google", {
+      method: "POST",
+      body: JSON.stringify({ token }),
+    })
+
+    if (response.success && response.data && typeof window !== "undefined") {
+      localStorage.setItem("access_token", response.data.access_token)
+      document.cookie = `access_token=${response.data.access_token}; path=/; max-age=86400; SameSite=Strict`
+    }
+
     return response
   }
 

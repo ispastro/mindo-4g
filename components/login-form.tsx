@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { apiClient } from "@/lib/api-client"
+import { GoogleLogin } from "@react-oauth/google"
 
 export function LoginForm() {
   const router = useRouter()
@@ -18,17 +19,33 @@ export function LoginForm() {
     e.preventDefault()
     setError("")
     setLoading(true)
-
     try {
       const response = await apiClient.login({ email, password })
-      
       if (response.success) {
         router.push("/app")
       } else {
         setError(response.error || "Login failed")
       }
-    } catch (err) {
+    } catch {
       setError("Network error. Please try again.")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleGoogleSuccess = async (credentialResponse: { credential?: string }) => {
+    if (!credentialResponse.credential) return
+    setError("")
+    setLoading(true)
+    try {
+      const response = await apiClient.googleLogin(credentialResponse.credential)
+      if (response.success) {
+        router.push("/app")
+      } else {
+        setError(response.error || "Google login failed")
+      }
+    } catch {
+      setError("Google login failed. Please try again.")
     } finally {
       setLoading(false)
     }
@@ -41,6 +58,26 @@ export function LoginForm() {
           {error}
         </div>
       )}
+
+      <div className="flex justify-center">
+        <GoogleLogin
+          onSuccess={handleGoogleSuccess}
+          onError={() => setError("Google login failed. Please try again.")}
+          theme="outline"
+          size="large"
+          width={400}
+          text="continue_with"
+        />
+      </div>
+
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <span className="w-full border-t border-border" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-background px-2 text-muted-foreground">or</span>
+        </div>
+      </div>
       
       <div className="space-y-2">
         <Label htmlFor="email">Email</Label>

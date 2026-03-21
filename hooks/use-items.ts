@@ -12,7 +12,7 @@ const STORAGE_KEY = "mindo-items"
 const fetcher = async (key: string): Promise<PaginatedResponse<Item>> => {
   const params = new URLSearchParams(key.split("?")[1] || "")
   const page = Number.parseInt(params.get("page") || "1")
-  const pageSize = Number.parseInt(params.get("pageSize") || "10")
+  const pageSize = Number.parseInt(params.get("page_size") || "10")
   const query = params.get("query") || undefined
   const useAI = params.get("useAI") === "true"
 
@@ -126,7 +126,7 @@ export function useItems(options: { page?: number; pageSize?: number; query?: st
   // Build the SWR key
   const params = new URLSearchParams({
     page: page.toString(),
-    pageSize: pageSize.toString(),
+    page_size: pageSize.toString(),
   })
   if (query) params.append("query", query)
   if (isNaturalLanguage) params.append("useAI", "true")
