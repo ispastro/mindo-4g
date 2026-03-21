@@ -33,7 +33,27 @@ export function ItemsList({ items, onRemove, onUpdate, pagination, onPageChange,
 
   const speakItem = (item: Item) => {
     if ("speechSynthesis" in window) {
-      const utterance = new SpeechSynthesisUtterance(`Your ${item.name} is ${item.location}`)
+      // Smart preposition detection
+      const location = item.location.toLowerCase()
+      let preposition = ""
+      
+      // Check if location already has a preposition
+      const hasPreposition = /^(in|on|at|under|behind|inside|near|by|next to|beside|above|below)\s/.test(location)
+      
+      if (!hasPreposition) {
+        // Add appropriate preposition based on location type
+        if (/\b(drawer|box|bag|pocket|container|cabinet|closet|room|car|house|building)\b/.test(location)) {
+          preposition = "in the "
+        } else if (/\b(table|desk|counter|shelf|floor|bed|chair|couch|sofa)\b/.test(location)) {
+          preposition = "on the "
+        } else if (/\b(home|work|office|school|gym|store|mall)\b/.test(location)) {
+          preposition = "at "
+        } else {
+          preposition = "in " // default
+        }
+      }
+      
+      const utterance = new SpeechSynthesisUtterance(`Your ${item.name} is ${preposition}${item.location}`)
       utterance.rate = 1.0
       window.speechSynthesis.speak(utterance)
     }

@@ -39,20 +39,36 @@ export default function AppPage() {
   useEffect(() => {
     if (debouncedQuery && items.length > 0 && !isLoading) {
       const firstItem = items[0]
-      const message = `Your ${firstItem.name} is in ${firstItem.location}`
+      
+      // Smart preposition detection
+      const location = firstItem.location.toLowerCase()
+      let preposition = ""
+      
+      const hasPreposition = /^(in|on|at|under|behind|inside|near|by|next to|beside|above|below)\s/.test(location)
+      
+      if (!hasPreposition) {
+        if (/\b(drawer|box|bag|pocket|container|cabinet|closet|room|car|house|building)\b/.test(location)) {
+          preposition = "in the "
+        } else if (/\b(table|desk|counter|shelf|floor|bed|chair|couch|sofa)\b/.test(location)) {
+          preposition = "on the "
+        } else if (/\b(home|work|office|school|gym|store|mall)\b/.test(location)) {
+          preposition = "at "
+        } else {
+          preposition = "in "
+        }
+      }
+      
+      const message = `Your ${firstItem.name} is ${preposition}${firstItem.location}`
       
       if ('speechSynthesis' in window) {
-        // Cancel any ongoing speech
         window.speechSynthesis.cancel()
         
-        // Small delay to ensure speech synthesis is ready
         setTimeout(() => {
           const utterance = new SpeechSynthesisUtterance(message)
           utterance.rate = 0.9
           utterance.pitch = 1
           utterance.volume = 1
           
-          // Handle errors
           utterance.onerror = (event) => {
             console.log('Speech synthesis error:', event)
           }
