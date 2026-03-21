@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import type { Item } from "@/hooks/use-items-store"
 import type SpeechRecognition from "speech-recognition"
+import { voiceService } from "@/lib/voice-service"
 
 interface VoiceButtonProps {
   onResult: (item: Omit<Item, "id" | "createdAt">) => void
@@ -100,13 +101,18 @@ export function VoiceButton({ onResult }: VoiceButtonProps) {
     return null
   }
 
-  const speakConfirmation = (item: string, location: string) => {
+  const speakConfirmation = async (item: string, location: string) => {
+    const message = `Got it! I'll remember that your ${item} is ${location}.`
+    await voiceService.speak(message)
+    
+    /* OLD WEB SPEECH API - Kept as reference
     if ("speechSynthesis" in window) {
-      const utterance = new SpeechSynthesisUtterance(`Got it! I'll remember that your ${item} is ${location}.`)
+      const utterance = new SpeechSynthesisUtterance(message)
       utterance.rate = 1.0
       utterance.pitch = 1.0
       window.speechSynthesis.speak(utterance)
     }
+    */
   }
 
   const toggleListening = () => {

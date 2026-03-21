@@ -14,6 +14,7 @@ import { EditItemDialog } from "@/components/edit-item-dialog"
 import { DeleteItemDialog } from "@/components/delete-item-dialog"
 import type { Item, PaginatedResponse } from "@/lib/types"
 import { formatDistanceToNow } from "date-fns"
+import { voiceService } from "@/lib/voice-service"
 
 interface ItemsListProps {
   items: Item[]
@@ -31,32 +32,37 @@ export function ItemsList({ items, onRemove, onUpdate, pagination, onPageChange,
   const [deleteItem, setDeleteItem] = useState<Item | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  const speakItem = (item: Item) => {
-    if ("speechSynthesis" in window) {
-      // Smart preposition detection
-      const location = item.location.toLowerCase()
-      let preposition = ""
-      
-      // Check if location already has a preposition
-      const hasPreposition = /^(in|on|at|under|behind|inside|near|by|next to|beside|above|below)\s/.test(location)
-      
-      if (!hasPreposition) {
-        // Add appropriate preposition based on location type
-        if (/\b(drawer|box|bag|pocket|container|cabinet|closet|room|car|house|building)\b/.test(location)) {
-          preposition = "in the "
-        } else if (/\b(table|desk|counter|shelf|floor|bed|chair|couch|sofa)\b/.test(location)) {
-          preposition = "on the "
-        } else if (/\b(home|work|office|school|gym|store|mall)\b/.test(location)) {
-          preposition = "at "
-        } else {
-          preposition = "in " // default
-        }
+  const speakItem = async (item: Item) => {
+    // Smart preposition detection
+    const location = item.location.toLowerCase()
+    let preposition = ""
+    
+    // Check if location already has a preposition
+    const hasPreposition = /^(in|on|at|under|behind|inside|near|by|next to|beside|above|below)\s/.test(location)
+    
+    if (!hasPreposition) {
+      // Add appropriate preposition based on location type
+      if (/\b(drawer|box|bag|pocket|container|cabinet|closet|room|car|house|building)\b/.test(location)) {
+        preposition = "in the "
+      } else if (/\b(table|desk|counter|shelf|floor|bed|chair|couch|sofa)\b/.test(location)) {
+        preposition = "on the "
+      } else if (/\b(home|work|office|school|gym|store|mall)\b/.test(location)) {
+        preposition = "at "
+      } else {
+        preposition = "in " // default
       }
-      
-      const utterance = new SpeechSynthesisUtterance(`Your ${item.name} is ${preposition}${item.location}`)
+    }
+    
+    const message = `Your ${item.name} is ${preposition}${item.location}`
+    await voiceService.speak(message)
+    
+    /* OLD WEB SPEECH API - Kept as reference
+    if ("speechSynthesis" in window) {
+      const utterance = new SpeechSynthesisUtterance(message)
       utterance.rate = 1.0
       window.speechSynthesis.speak(utterance)
     }
+    */
   }
 
   const handleDelete = async () => {

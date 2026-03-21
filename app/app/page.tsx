@@ -12,6 +12,7 @@ import { UserProfile } from "@/components/user-profile"
 import { Mic, Keyboard, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { voiceService } from "@/lib/voice-service"
 
 export default function AppPage() {
   const [inputMode, setInputMode] = useState<"voice" | "type">("voice")
@@ -61,6 +62,10 @@ export default function AppPage() {
       
       const message = `Your ${firstItem.name} is ${preposition}${firstItem.location}`
       
+      // Use ElevenLabs TTS
+      voiceService.speak(message)
+      
+      /* OLD WEB SPEECH API - Kept as reference
       if ('speechSynthesis' in window) {
         window.speechSynthesis.cancel()
         
@@ -77,6 +82,7 @@ export default function AppPage() {
           window.speechSynthesis.speak(utterance)
         }, 100)
       }
+      */
     }
   }, [debouncedQuery, items, isLoading])
 
