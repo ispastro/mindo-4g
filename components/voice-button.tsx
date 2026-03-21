@@ -37,6 +37,9 @@ export function VoiceButton({ onResult }: VoiceButtonProps) {
         setState("processing")
         const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" })
         
+        console.log("🎵 Recording stopped. Audio chunks collected:", audioChunksRef.current.length)
+        console.log("💾 Total audio blob size:", audioBlob.size, "bytes")
+        
         try {
           const text = await voiceService.transcribe(audioBlob)
           setTranscript(text)

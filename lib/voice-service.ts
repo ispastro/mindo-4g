@@ -12,7 +12,7 @@ class VoiceService {
   /**
    * Text-to-Speech using ElevenLabs via backend
    */
-  async speak(text: string, voiceId?: string): Promise<void> {
+  async speak(text: string): Promise<void> {
     try {
       const token = this.getToken()
       if (!token) {
@@ -27,10 +27,7 @@ class VoiceService {
           "Authorization": `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ 
-          text,
-          voice_id: voiceId || "21m00Tcm4TlvDq8ikWAM" // Default voice
-        }),
+        body: JSON.stringify({ text }),
       })
 
       if (!response.ok) {
@@ -62,9 +59,18 @@ class VoiceService {
         throw new Error("No auth token")
       }
 
+      // Log blob details
+      console.log("🎤 Audio Blob Details:", {
+        size: audioBlob.size,
+        type: audioBlob.type,
+        sizeInKB: (audioBlob.size / 1024).toFixed(2) + " KB"
+      })
+
       // Send audio to backend for transcription
       const formData = new FormData()
       formData.append("audio", audioBlob, "recording.webm")
+
+      console.log("📤 Sending audio to backend:", `${API_BASE}/voice/stt`)
 
       const response = await fetch(`${API_BASE}/voice/stt`, {
         method: "POST",
@@ -74,11 +80,21 @@ class VoiceService {
         body: formData,
       })
 
+      console.log("📥 Backend response status:", response.status)
+
       if (!response.ok) {
-        throw new Error(`STT failed: ${response.status}`)
+        let errorText = ""
+        try {
+          errorText = await response.text()
+          console.error("❌ Backend error response:", errorText)
+        } catch (e) {
+          console.error("❌ Could not read error response")
+        }
+        throw new Error(`STT failed: ${response.status} - ${errorText}`)
       }
 
       const result = await response.json()
+      console.log("✅ Transcription result:", result)
       return result.text || ""
     } catch (error) {
       console.error("ElevenLabs STT error:", error)

@@ -33,6 +33,9 @@ export function SearchBar({ value, onChange }: SearchBarProps) {
       mediaRecorder.onstop = async () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" })
         
+        console.log("🔍 Search: Audio chunks collected:", audioChunksRef.current.length)
+        console.log("🔍 Search: Audio blob size:", audioBlob.size, "bytes")
+        
         try {
           const text = await voiceService.transcribe(audioBlob)
           onChange(text)
