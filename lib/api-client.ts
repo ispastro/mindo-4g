@@ -133,17 +133,10 @@ class ApiClient {
     return response
   }
 
-  async googleLogin(accessToken: string): Promise<ApiResponse<{ access_token: string; token_type: string; user: User }>> {
-    // Exchange access token for user info to get id_token equivalent
-    const userInfoRes = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo`, {
-      headers: { Authorization: `Bearer ${accessToken}` },
-    })
-    const userInfo = await userInfoRes.json()
-
-    // Send the access token directly — backend will verify via Google userinfo
+  async googleLogin(idToken: string): Promise<ApiResponse<{ access_token: string; token_type: string; user: User }>> {
     const response = await this.request<{ access_token: string; token_type: string; user: User }>("/auth/google", {
       method: "POST",
-      body: JSON.stringify({ token: accessToken }),
+      body: JSON.stringify({ token: idToken }),
     })
 
     if (response.success && response.data && typeof window !== "undefined") {
