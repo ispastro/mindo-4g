@@ -8,6 +8,7 @@ import { TypeForm } from "@/components/type-form"
 import { useItems } from "@/hooks/use-items"
 import { ThemeToggle } from "@/components/theme-toggle"
 import { MindoLogo } from "@/components/mindo-logo"
+import { UserProfile } from "@/components/user-profile"
 import { Mic, Keyboard, Loader2 } from "lucide-react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -105,7 +106,10 @@ export default function AppPage() {
               </div>
               <span className="text-xl font-semibold text-primary">Mindo</span>
             </Link>
-            <ThemeToggle />
+            <div className="flex items-center gap-3">
+              <ThemeToggle />
+              <UserProfile />
+            </div>
           </div>
         </div>
       </header>
