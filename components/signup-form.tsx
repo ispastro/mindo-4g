@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -15,6 +15,17 @@ export function SignupForm() {
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const [buttonWidth, setButtonWidth] = useState(400)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const update = () => {
+      if (containerRef.current) setButtonWidth(containerRef.current.offsetWidth)
+    }
+    update()
+    window.addEventListener("resize", update)
+    return () => window.removeEventListener("resize", update)
+  }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -68,13 +79,13 @@ export function SignupForm() {
         </div>
       )}
 
-      <div className="flex justify-center">
+      <div ref={containerRef} className="w-full">
         <GoogleLogin
           onSuccess={handleGoogleSuccess}
           onError={() => setError("Google signup failed. Please try again.")}
           theme="outline"
           size="large"
-          width={400}
+          width={buttonWidth}
           text="continue_with"
         />
       </div>
