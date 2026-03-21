@@ -1,11 +1,10 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef } from "react"
 import { Mic, MicOff, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import type { Item } from "@/hooks/use-items-store"
-import type SpeechRecognition from "speech-recognition"
 import { voiceService } from "@/lib/voice-service"
 
 interface VoiceButtonProps {
@@ -18,50 +17,54 @@ export function VoiceButton({ onResult }: VoiceButtonProps) {
   const [state, setState] = useState<VoiceState>("idle")
   const [transcript, setTranscript] = useState("")
   const [error, setError] = useState<string | null>(null)
-  const recognitionRef = useRef<SpeechRecognition | null>(null)
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+  const audioChunksRef = useRef<Blob[]>([])
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
-      if (SpeechRecognition) {
-        recognitionRef.current = new SpeechRecognition()
-        recognitionRef.current.continuous = false
-        recognitionRef.current.interimResults = true
-        recognitionRef.current.lang = "en-US"
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const mediaRecorder = new MediaRecorder(stream)
+      mediaRecorderRef.current = mediaRecorder
+      audioChunksRef.current = []
 
-        recognitionRef.current.onresult = (event) => {
-          const current = event.resultIndex
-          const result = event.results[current]
-          const text = result[0].transcript
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data)
+        }
+      }
+
+      mediaRecorder.onstop = async () => {
+        setState("processing")
+        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" })
+        
+        try {
+          const text = await voiceService.transcribe(audioBlob)
           setTranscript(text)
-
-          if (result.isFinal) {
-            setState("processing")
-            processTranscript(text)
-          }
-        }
-
-        recognitionRef.current.onerror = (event) => {
-          console.error("Speech recognition error:", event.error)
-          setError("Could not recognize speech. Please try again.")
+          processTranscript(text)
+        } catch (err) {
+          console.error("Transcription error:", err)
+          setError("Could not transcribe audio. Please try again.")
           setState("idle")
-          setTranscript("")
         }
 
-        recognitionRef.current.onend = () => {
-          if (state === "listening") {
-            setState("idle")
-          }
-        }
+        // Stop all tracks
+        stream.getTracks().forEach(track => track.stop())
       }
-    }
 
-    return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.abort()
-      }
+      mediaRecorder.start()
+      setState("listening")
+      setError(null)
+    } catch (err) {
+      console.error("Microphone error:", err)
+      setError("Could not access microphone. Please check permissions.")
     }
-  }, [])
+  }
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
+      mediaRecorderRef.current.stop()
+    }
+  }
 
   const processTranscript = (text: string) => {
     // Parse the transcript to extract item and location
@@ -118,6 +121,17 @@ export function VoiceButton({ onResult }: VoiceButtonProps) {
   const toggleListening = () => {
     setError(null)
 
+    if (state === "listening") {
+      stopRecording()
+    } else {
+      startRecording()
+    }
+  }
+
+  /* OLD BROWSER SPEECH RECOGNITION - Kept as reference
+  const toggleListening = () => {
+    setError(null)
+
     if (!recognitionRef.current) {
       setError("Speech recognition is not supported in your browser.")
       return
@@ -132,6 +146,7 @@ export function VoiceButton({ onResult }: VoiceButtonProps) {
       setState("listening")
     }
   }
+  */
 
   return (
     <div className="flex flex-col items-center gap-4">

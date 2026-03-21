@@ -1,10 +1,11 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef } from "react"
 import { Search, Mic, MicOff } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { voiceService } from "@/lib/voice-service"
 
 interface SearchBarProps {
   value: string
@@ -13,8 +14,64 @@ interface SearchBarProps {
 
 export function SearchBar({ value, onChange }: SearchBarProps) {
   const [isListening, setIsListening] = useState(false)
-  const recognitionRef = useRef<any | null>(null)
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null)
+  const audioChunksRef = useRef<Blob[]>([])
 
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const mediaRecorder = new MediaRecorder(stream)
+      mediaRecorderRef.current = mediaRecorder
+      audioChunksRef.current = []
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data)
+        }
+      }
+
+      mediaRecorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" })
+        
+        try {
+          const text = await voiceService.transcribe(audioBlob)
+          onChange(text)
+          speakResults(text)
+        } catch (err) {
+          console.error("Transcription error:", err)
+        }
+
+        setIsListening(false)
+        stream.getTracks().forEach(track => track.stop())
+      }
+
+      mediaRecorder.start()
+      setIsListening(true)
+    } catch (err) {
+      console.error("Microphone error:", err)
+      setIsListening(false)
+    }
+  }
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === "recording") {
+      mediaRecorderRef.current.stop()
+    }
+  }
+
+  const speakResults = async (query: string) => {
+    await voiceService.speak(`Searching for ${query}`)
+  }
+
+  const toggleVoiceSearch = () => {
+    if (isListening) {
+      stopRecording()
+    } else {
+      startRecording()
+    }
+  }
+
+  /* OLD BROWSER SPEECH RECOGNITION - Kept as reference
   useEffect(() => {
     if (typeof window !== "undefined") {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
@@ -28,8 +85,6 @@ export function SearchBar({ value, onChange }: SearchBarProps) {
           const text = event.results[0][0].transcript
           onChange(text)
           setIsListening(false)
-
-          // Speak the results
           speakResults(text)
         }
 
@@ -49,29 +104,7 @@ export function SearchBar({ value, onChange }: SearchBarProps) {
       }
     }
   }, [onChange])
-
-  const speakResults = (query: string) => {
-    if ("speechSynthesis" in window) {
-      // Small delay to let UI update
-      setTimeout(() => {
-        const utterance = new SpeechSynthesisUtterance(`Searching for ${query}`)
-        utterance.rate = 1.0
-        window.speechSynthesis.speak(utterance)
-      }, 100)
-    }
-  }
-
-  const toggleVoiceSearch = () => {
-    if (!recognitionRef.current) return
-
-    if (isListening) {
-      recognitionRef.current.stop()
-      setIsListening(false)
-    } else {
-      recognitionRef.current.start()
-      setIsListening(true)
-    }
-  }
+  */
 
   return (
     <div className="relative">

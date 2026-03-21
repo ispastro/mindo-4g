@@ -1,7 +1,12 @@
-// Voice service for ElevenLabs TTS integration
+// Voice service for ElevenLabs TTS and STT integration
 import { apiClient } from "./api-client"
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://mindo-edb480512968.herokuapp.com/api"
+
+interface STTConfig {
+  api_key: string
+  model: string
+}
 
 class VoiceService {
   private getToken(): string | null {
@@ -49,6 +54,54 @@ class VoiceService {
       console.error("ElevenLabs TTS error:", error)
       // Fallback to browser TTS
       this.fallbackSpeak(text)
+    }
+  }
+
+  /**
+   * Speech-to-Text using ElevenLabs
+   */
+  async transcribe(audioBlob: Blob): Promise<string> {
+    try {
+      const token = this.getToken()
+      if (!token) {
+        throw new Error("No auth token")
+      }
+
+      // Get STT config from backend
+      const configResponse = await fetch(`${API_BASE}/voice/stt-config`, {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      })
+
+      if (!configResponse.ok) {
+        throw new Error(`Failed to get STT config: ${configResponse.status}`)
+      }
+
+      const config: STTConfig = await configResponse.json()
+
+      // Call ElevenLabs STT API directly
+      const formData = new FormData()
+      formData.append("audio", audioBlob, "recording.webm")
+      formData.append("model_id", config.model)
+
+      const response = await fetch("https://api.elevenlabs.io/v1/speech-to-text", {
+        method: "POST",
+        headers: {
+          "xi-api-key": config.api_key,
+        },
+        body: formData,
+      })
+
+      if (!response.ok) {
+        throw new Error(`STT failed: ${response.status}`)
+      }
+
+      const result = await response.json()
+      return result.text || ""
+    } catch (error) {
+      console.error("ElevenLabs STT error:", error)
+      throw error
     }
   }
 
