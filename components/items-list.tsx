@@ -98,7 +98,7 @@ export function ItemsList({ items, onRemove, onUpdate, pagination, onPageChange,
               <Clock className="h-3 w-3" />
               <span>
                 {item.created_at && !isNaN(new Date(item.created_at).getTime())
-                  ? formatDistanceToNow(new Date(item.created_at), { addSuffix: true })
+                  ? formatDistanceToNow(new Date(item.created_at.endsWith('Z') ? item.created_at : item.created_at + 'Z'), { addSuffix: true })
                   : 'Recently added'}
               </span>
             </div>
