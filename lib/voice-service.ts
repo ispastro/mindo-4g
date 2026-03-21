@@ -3,11 +3,6 @@ import { apiClient } from "./api-client"
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://mindo-edb480512968.herokuapp.com/api"
 
-interface STTConfig {
-  api_key: string
-  model: string
-}
-
 class VoiceService {
   private getToken(): string | null {
     if (typeof window === "undefined") return null
@@ -58,7 +53,7 @@ class VoiceService {
   }
 
   /**
-   * Speech-to-Text using ElevenLabs
+   * Speech-to-Text using ElevenLabs via backend
    */
   async transcribe(audioBlob: Blob): Promise<string> {
     try {
@@ -67,28 +62,14 @@ class VoiceService {
         throw new Error("No auth token")
       }
 
-      // Get STT config from backend
-      const configResponse = await fetch(`${API_BASE}/voice/stt-config`, {
-        headers: {
-          "Authorization": `Bearer ${token}`,
-        },
-      })
-
-      if (!configResponse.ok) {
-        throw new Error(`Failed to get STT config: ${configResponse.status}`)
-      }
-
-      const config: STTConfig = await configResponse.json()
-
-      // Call ElevenLabs STT API directly
+      // Send audio to backend for transcription
       const formData = new FormData()
       formData.append("audio", audioBlob, "recording.webm")
-      formData.append("model_id", config.model)
 
-      const response = await fetch("https://api.elevenlabs.io/v1/speech-to-text", {
+      const response = await fetch(`${API_BASE}/voice/stt`, {
         method: "POST",
         headers: {
-          "xi-api-key": config.api_key,
+          "Authorization": `Bearer ${token}`,
         },
         body: formData,
       })
