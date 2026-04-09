@@ -43,19 +43,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${lexend.variable} font-sans antialiased`}>
-        {googleClientId ? (
-          <GoogleOAuthProvider clientId={googleClientId}>
-            {children}
-            <InstallPrompt />
-            <Analytics />
-          </GoogleOAuthProvider>
-        ) : (
-          <>
-            {children}
-            <InstallPrompt />
-            <Analytics />
-          </>
-        )}
+        <GoogleOAuthProvider clientId={googleClientId}>
+          {children}
+          <InstallPrompt />
+          <Analytics />
+        </GoogleOAuthProvider>
       </body>
     </html>
   )
