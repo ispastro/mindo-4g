@@ -4,6 +4,8 @@ import { apiClient } from "./api-client"
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "https://mindo-edb480512968.herokuapp.com/api"
 
 class VoiceService {
+  private currentAudio: HTMLAudioElement | null = null
+  
   private getToken(): string | null {
     if (typeof window === "undefined") return null
     return localStorage.getItem("access_token")
@@ -14,6 +16,13 @@ class VoiceService {
    */
   async speak(text: string): Promise<void> {
     try {
+      // Stop any currently playing audio
+      if (this.currentAudio) {
+        this.currentAudio.pause()
+        this.currentAudio.currentTime = 0
+        this.currentAudio = null
+      }
+      
       const token = this.getToken()
       if (!token) {
         console.warn("No auth token, falling back to browser TTS")
@@ -36,10 +45,17 @@ class VoiceService {
 
       const audioBlob = await response.blob()
       const audio = new Audio(URL.createObjectURL(audioBlob))
+      this.currentAudio = audio
       
       return new Promise((resolve, reject) => {
-        audio.onended = () => resolve()
-        audio.onerror = reject
+        audio.onended = () => {
+          this.currentAudio = null
+          resolve()
+        }
+        audio.onerror = (err) => {
+          this.currentAudio = null
+          reject(err)
+        }
         audio.play()
       })
     } catch (error) {
@@ -122,8 +138,14 @@ class VoiceService {
    * Cancel any ongoing speech
    */
   cancel(): void {
-    // For ElevenLabs, we'd need to track the Audio element
-    // For now, just cancel browser TTS if it's active
+    // Stop ElevenLabs audio
+    if (this.currentAudio) {
+      this.currentAudio.pause()
+      this.currentAudio.currentTime = 0
+      this.currentAudio = null
+    }
+    
+    // Also cancel browser TTS if it's active
     if (typeof window !== "undefined" && "speechSynthesis" in window) {
       window.speechSynthesis.cancel()
     }

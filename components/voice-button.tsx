@@ -1,24 +1,97 @@
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { Mic, MicOff, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import type { Item } from "@/hooks/use-items-store"
 import { voiceService } from "@/lib/voice-service"
+import { VOICE_CONFIG } from "@/lib/voice-config"
 
 interface VoiceButtonProps {
   onResult: (item: Omit<Item, "id" | "createdAt">) => void
+  silenceThreshold?: number
+  silenceDuration?: number
+  minRecordingTime?: number
+  maxRecordingTime?: number
 }
 
 type VoiceState = "idle" | "listening" | "processing"
 
-export function VoiceButton({ onResult }: VoiceButtonProps) {
+export function VoiceButton({ 
+  onResult, 
+  silenceThreshold = VOICE_CONFIG.SILENCE_THRESHOLD, 
+  silenceDuration = VOICE_CONFIG.SILENCE_DURATION,
+  minRecordingTime = VOICE_CONFIG.MIN_RECORDING_TIME,
+  maxRecordingTime = VOICE_CONFIG.MAX_RECORDING_TIME
+}: VoiceButtonProps) {
   const [state, setState] = useState<VoiceState>("idle")
   const [transcript, setTranscript] = useState("")
   const [error, setError] = useState<string | null>(null)
+  const [volumeLevel, setVolumeLevel] = useState(0)
+  const [recordingTime, setRecordingTime] = useState(0)
+  
   const mediaRecorderRef = useRef<MediaRecorder | null>(null)
   const audioChunksRef = useRef<Blob[]>([])
+  const audioContextRef = useRef<AudioContext | null>(null)
+  const analyserRef = useRef<AnalyserNode | null>(null)
+  const silenceTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const maxTimeTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const recordingStartTimeRef = useRef<number>(0)
+  const animationFrameRef = useRef<number | null>(null)
+  const recordingIntervalRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (silenceTimerRef.current) clearTimeout(silenceTimerRef.current)
+      if (maxTimeTimerRef.current) clearTimeout(maxTimeTimerRef.current)
+      if (recordingIntervalRef.current) clearInterval(recordingIntervalRef.current)
+      if (animationFrameRef.current) cancelAnimationFrame(animationFrameRef.current)
+      if (audioContextRef.current) audioContextRef.current.close()
+    }
+  }, [])
+
+  const detectSilence = () => {
+    if (!analyserRef.current) return
+
+    const bufferLength = analyserRef.current.frequencyBinCount
+    const dataArray = new Uint8Array(bufferLength)
+    analyserRef.current.getByteFrequencyData(dataArray)
+
+    // Calculate average volume
+    const average = dataArray.reduce((sum, value) => sum + value, 0) / bufferLength
+    
+    // Convert to decibels (approximate)
+    const db = average > 0 ? 20 * Math.log10(average / 255) : -100
+    setVolumeLevel(Math.max(0, Math.min(100, (db + 100) * 2))) // Normalize to 0-100
+
+    const isSilent = db < silenceThreshold
+    const recordingDuration = Date.now() - recordingStartTimeRef.current
+
+    if (isSilent && recordingDuration > minRecordingTime) {
+      // Start silence timer if not already started
+      if (!silenceTimerRef.current) {
+        console.log("🔇 Silence detected, starting timer...")
+        silenceTimerRef.current = setTimeout(() => {
+          console.log("⏱️ Silence duration exceeded, auto-stopping...")
+          stopRecording()
+        }, silenceDuration)
+      }
+    } else {
+      // Clear silence timer if user is speaking
+      if (silenceTimerRef.current) {
+        console.log("🎤 Speech detected, clearing silence timer")
+        clearTimeout(silenceTimerRef.current)
+        silenceTimerRef.current = null
+      }
+    }
+
+    // Continue monitoring
+    if (state === "listening") {
+      animationFrameRef.current = requestAnimationFrame(detectSilence)
+    }
+  }
 
   const startRecording = async () => {
     try {
@@ -26,6 +99,18 @@ export function VoiceButton({ onResult }: VoiceButtonProps) {
       const mediaRecorder = new MediaRecorder(stream)
       mediaRecorderRef.current = mediaRecorder
       audioChunksRef.current = []
+      recordingStartTimeRef.current = Date.now()
+
+      // Setup Web Audio API for silence detection
+      const audioContext = new AudioContext()
+      audioContextRef.current = audioContext
+      const source = audioContext.createMediaStreamSource(stream)
+      const analyser = audioContext.createAnalyser()
+      analyserRef.current = analyser
+      
+      analyser.fftSize = VOICE_CONFIG.AUDIO.FFT_SIZE
+      analyser.smoothingTimeConstant = VOICE_CONFIG.AUDIO.SMOOTHING
+      source.connect(analyser)
 
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
@@ -34,6 +119,30 @@ export function VoiceButton({ onResult }: VoiceButtonProps) {
       }
 
       mediaRecorder.onstop = async () => {
+        // Cleanup
+        if (silenceTimerRef.current) {
+          clearTimeout(silenceTimerRef.current)
+          silenceTimerRef.current = null
+        }
+        if (maxTimeTimerRef.current) {
+          clearTimeout(maxTimeTimerRef.current)
+          maxTimeTimerRef.current = null
+        }
+        if (recordingIntervalRef.current) {
+          clearInterval(recordingIntervalRef.current)
+          recordingIntervalRef.current = null
+        }
+        if (animationFrameRef.current) {
+          cancelAnimationFrame(animationFrameRef.current)
+          animationFrameRef.current = null
+        }
+        if (audioContextRef.current) {
+          audioContextRef.current.close()
+          audioContextRef.current = null
+        }
+        setVolumeLevel(0)
+        setRecordingTime(0)
+
         setState("processing")
         const audioBlob = new Blob(audioChunksRef.current, { type: "audio/webm" })
         
@@ -57,6 +166,21 @@ export function VoiceButton({ onResult }: VoiceButtonProps) {
       mediaRecorder.start()
       setState("listening")
       setError(null)
+
+      // Start recording time counter
+      recordingIntervalRef.current = setInterval(() => {
+        const elapsed = Date.now() - recordingStartTimeRef.current
+        setRecordingTime(Math.floor(elapsed / 1000))
+      }, 1000)
+
+      // Set max recording time limit
+      maxTimeTimerRef.current = setTimeout(() => {
+        console.log("⏰ Max recording time reached, auto-stopping...")
+        stopRecording()
+      }, maxRecordingTime)
+
+      // Start silence detection
+      detectSilence()
     } catch (err) {
       console.error("Microphone error:", err)
       setError("Could not access microphone. Please check permissions.")
@@ -174,10 +298,32 @@ export function VoiceButton({ onResult }: VoiceButtonProps) {
         )}
       </Button>
 
-      <div className="h-8 text-center">
-        {state === "listening" && <p className="text-sm text-primary animate-pulse">{transcript || "Listening..."}</p>}
-        {state === "processing" && <p className="text-sm text-muted-foreground">Processing...</p>}
-        {error && <p className="text-sm text-destructive">{error}</p>}
+      <div className="flex flex-col items-center gap-2">
+        {/* Volume indicator */}
+        {state === "listening" && (
+          <div className="flex flex-col items-center gap-2 w-full">
+            <div className="w-48 h-2 bg-muted rounded-full overflow-hidden">
+              <div 
+                className="h-full bg-primary transition-all duration-100 ease-out"
+                style={{ width: `${volumeLevel}%` }}
+              />
+            </div>
+            {/* Recording timer */}
+            <div className="text-xs text-muted-foreground font-mono">
+              {recordingTime}s / {Math.floor(maxRecordingTime / 1000)}s
+            </div>
+          </div>
+        )}
+        
+        <div className="h-8 text-center">
+          {state === "listening" && (
+            <p className="text-sm text-primary animate-pulse">
+              {transcript || "Speak now... (auto-stops after silence)"}
+            </p>
+          )}
+          {state === "processing" && <p className="text-sm text-muted-foreground">Processing...</p>}
+          {error && <p className="text-sm text-destructive">{error}</p>}
+        </div>
       </div>
     </div>
   )

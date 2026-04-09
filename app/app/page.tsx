@@ -76,27 +76,8 @@ export default function AppPage() {
       
       // Use ElevenLabs TTS
       voiceService.speak(message)
-      
-      /* OLD WEB SPEECH API - Kept as reference
-      if ('speechSynthesis' in window) {
-        window.speechSynthesis.cancel()
-        
-        setTimeout(() => {
-          const utterance = new SpeechSynthesisUtterance(message)
-          utterance.rate = 0.9
-          utterance.pitch = 1
-          utterance.volume = 1
-          
-          utterance.onerror = (event) => {
-            console.log('Speech synthesis error:', event)
-          }
-          
-          window.speechSynthesis.speak(utterance)
-        }, 100)
-      }
-      */
     }
-  }, [debouncedQuery, items, isLoading])
+  }, [debouncedQuery, items.length, isLoading]) // ✅ Changed: Use items.length instead of items
 
   const handleAddItem = async (item: { name: string; location: string }) => {
     await addItem(item)

@@ -65,7 +65,7 @@
   
   /* Muted - Charcoal */
   --muted: #171717;
-  --muted-foreground: #a3a3a3;
+  --muted-foreground: #525252;
   
   /* Accent - Light gray */
   --accent: #e5e5e5;
@@ -76,7 +76,7 @@
   --destructive-foreground: #ffffff;
   
   /* Borders - Subtle gray */
-  --border: #262626;
+  --border: #404040;
   --input: #0a0a0a;
   --ring: #fafafa;
   

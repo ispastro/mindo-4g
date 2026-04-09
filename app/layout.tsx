@@ -38,14 +38,24 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const googleClientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || ""
+  
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`${lexend.variable} font-sans antialiased`}>
-        <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!}>
-          {children}
-          <InstallPrompt />
-          <Analytics />
-        </GoogleOAuthProvider>
+        {googleClientId ? (
+          <GoogleOAuthProvider clientId={googleClientId}>
+            {children}
+            <InstallPrompt />
+            <Analytics />
+          </GoogleOAuthProvider>
+        ) : (
+          <>
+            {children}
+            <InstallPrompt />
+            <Analytics />
+          </>
+        )}
       </body>
     </html>
   )

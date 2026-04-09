@@ -41,7 +41,7 @@ export function TypeForm({ onSubmit, isLoading }: TypeFormProps) {
           placeholder="e.g. Keys, Wallet, Glasses"
           value={itemName}
           onChange={(e) => setItemName(e.target.value)}
-          className="bg-background"
+          className="bg-background border-border/50"
           disabled={isLoading}
         />
       </div>
@@ -54,7 +54,7 @@ export function TypeForm({ onSubmit, isLoading }: TypeFormProps) {
           placeholder="e.g. Kitchen counter, Drawer"
           value={location}
           onChange={(e) => setLocation(e.target.value)}
-          className="bg-background"
+          className="bg-background border-border/50"
           disabled={isLoading}
         />
       </div>
