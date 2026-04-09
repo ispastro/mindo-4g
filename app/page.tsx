@@ -137,8 +137,8 @@ export default function Home() {
           </div>
 
           {/* Bottom Bar */}
-          <div className="pt-8 border-t border-border flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="flex flex-col items-center md:items-start gap-1">
+          <div className="pt-8 border-t border-border flex flex-col md:flex-row items-start justify-between gap-4">
+            <div className="flex flex-col gap-1">
               <p className="text-sm text-muted-foreground">
                 © {new Date().getFullYear()} Mindo. All rights reserved.
               </p>

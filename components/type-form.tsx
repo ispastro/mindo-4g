@@ -31,8 +31,8 @@ export function TypeForm({ onSubmit, isLoading }: TypeFormProps) {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-3 sm:flex-row sm:items-end">
-      <div className="flex-1 space-y-1.5">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4 sm:flex-row sm:items-start">
+      <div className="flex-1 space-y-2">
         <label htmlFor="item-name" className="text-sm font-medium text-foreground">
           Item
         </label>
@@ -45,7 +45,7 @@ export function TypeForm({ onSubmit, isLoading }: TypeFormProps) {
           disabled={isLoading}
         />
       </div>
-      <div className="flex-1 space-y-1.5">
+      <div className="flex-1 space-y-2">
         <label htmlFor="item-location" className="text-sm font-medium text-foreground">
           Location
         </label>
@@ -58,7 +58,7 @@ export function TypeForm({ onSubmit, isLoading }: TypeFormProps) {
           disabled={isLoading}
         />
       </div>
-      <Button type="submit" disabled={!itemName.trim() || !location.trim() || isLoading} className="gap-2">
+      <Button type="submit" disabled={!itemName.trim() || !location.trim() || isLoading} className="gap-2 sm:mt-[30px]">
         {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Plus className="h-4 w-4" />}
         Add Item
       </Button>

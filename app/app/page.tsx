@@ -155,7 +155,7 @@ export default function AppPage() {
           ) : (
             <div className="mx-auto max-w-2xl rounded-lg border border-border bg-card p-6">
               <TypeForm onSubmit={handleAddItem} isLoading={isCreating} />
-              <p className="mt-4 text-sm text-muted-foreground">Enter the item name and where you put it</p>
+              <p className="mt-4 text-center text-sm text-muted-foreground">Enter the item name and where you put it</p>
             </div>
           )}
         </section>
